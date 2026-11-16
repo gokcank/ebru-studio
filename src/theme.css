@@ -47,7 +47,11 @@ body {
 }
 
 header {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 0;
+  right: 0;
+  pointer-events: none;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
@@ -60,7 +64,11 @@ header h1 {
   letter-spacing: 0.02em;
 }
 
-#app {
+#tekne {
   flex: 1;
   min-height: 0;
+  display: block;
+  width: 100%;
+  touch-action: none;
+  cursor: crosshair;
 }
