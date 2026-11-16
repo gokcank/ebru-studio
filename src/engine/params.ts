@@ -45,6 +45,16 @@ export type Params = {
      * Halkası bundan uzun damla artık inceltilmez.
      */
     maxCoords: number;
+    /**
+     * Teknedeki toplam nokta bütçesi. Aşılacaksa inceltme durur: çok taranmış
+     * teknede ince şeritler köşeli kalabilir ama adım süresi sınırlı kalır.
+     */
+    maxTotalPoints: number;
+    /**
+     * İki ucu da teknenin aynı kenarının bu kadar (px) dışında kalan kenar
+     * inceltilmez: görünmeyen yerde nokta harcanmaz.
+     */
+    outsideMargin: number;
   };
   sprinkle: {
     /** Serpme düğmesinin bıraktığı damla sayısı. */
@@ -85,7 +95,7 @@ export const PARAMS: Params = {
   },
   tine: { u: 0.93, k: 1.2, zMax: 14, range: 160 },
   comb: { u: 0.88, zMax: 9, spacing: 46 },
-  refine: { threshold: 7, maxCoords: 3200 },
+  refine: { threshold: 7, maxCoords: 3200, maxTotalPoints: 96000, outsideMargin: 40 },
   sprinkle: { n: 16, rMin: 5, rMax: 31 },
   input: { minStep: 3, dropSpacing: 1.6 },
   opening: { n: 26, combLen: 7 },

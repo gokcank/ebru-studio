@@ -119,36 +119,65 @@ export function comb(
   }
 }
 
+/** Teknenin boyutu; inceltmenin tekne dışını ayırt etmesi için. */
+export type Bounds = { readonly w: number; readonly h: number };
+
+/**
+ * Noktanın tekneye (payıyla birlikte) göre hangi kenarların dışında kaldığı:
+ * bit 1 sol, 2 sağ, 4 üst, 8 alt. İki ucun kodları ortak bit taşıyorsa kenar
+ * tümüyle aynı tarafın dışındadır ve tekneyi kesemez.
+ */
+function outcode(x: number, y: number, w: number, h: number, m: number): number {
+  return (x < -m ? 1 : x > w + m ? 2 : 0) | (y < -m ? 4 : y > h + m ? 8 : 0);
+}
+
 /**
  * İnceltme: gerilen kenarlara orta nokta ekler ki eğriler köşeli görünmesin.
- * Halkası tavanı aşmış damlaya dokunulmaz (nokta patlamasına karşı).
+ * Nokta patlamasına karşı üç sınır vardır: halkası tavanı aşmış damlaya
+ * dokunulmaz; `bounds` verilmişse tümüyle tekne dışında kalan kenar inceltilmez;
+ * toplam nokta bütçesini aşacak damla inceltilmez (bütçe önce en yeni, yani en
+ * üstte görünen damlalara verilir).
  */
-export function refine(drops: readonly Drop[], params: Params = PARAMS): void {
-  const { threshold, maxCoords } = params.refine;
+export function refine(drops: readonly Drop[], params: Params = PARAMS, bounds?: Bounds): void {
+  const { threshold, maxCoords, maxTotalPoints, outsideMargin } = params.refine;
   const limit2 = threshold * threshold;
-  for (const d of drops) {
+  const clip = bounds !== undefined && bounds.w > 0 && bounds.h > 0;
+  const w = clip ? bounds.w : 0;
+  const h = clip ? bounds.h : 0;
+  /** Kenar (i → j) bölünmeli mi? */
+  const split = (p: Float32Array, i: number, j: number): boolean => {
+    const dx = p[j] - p[i];
+    const dy = p[j + 1] - p[i + 1];
+    if (dx * dx + dy * dy <= limit2) return false;
+    return !(
+      clip &&
+      (outcode(p[i], p[i + 1], w, h, outsideMargin) &
+        outcode(p[j], p[j + 1], w, h, outsideMargin)) !==
+        0
+    );
+  };
+
+  let total = 0;
+  for (const d of drops) total += d.p.length / 2;
+
+  for (let k = drops.length - 1; k >= 0; k--) {
+    const d = drops[k];
     const p = d.p;
     const n = p.length;
     if (n > maxCoords) continue;
 
     let extra = 0;
-    for (let i = 0; i < n; i += 2) {
-      const j = (i + 2) % n;
-      const dx = p[j] - p[i];
-      const dy = p[j + 1] - p[i + 1];
-      if (dx * dx + dy * dy > limit2) extra++;
-    }
-    if (extra === 0) continue;
+    for (let i = 0; i < n; i += 2) if (split(p, i, (i + 2) % n)) extra++;
+    if (extra === 0 || total + extra > maxTotalPoints) continue;
+    total += extra;
 
     const out = new Float32Array(n + extra * 2);
     let o = 0;
     for (let i = 0; i < n; i += 2) {
       const j = (i + 2) % n;
-      const dx = p[j] - p[i];
-      const dy = p[j + 1] - p[i + 1];
       out[o++] = p[i];
       out[o++] = p[i + 1];
-      if (dx * dx + dy * dy > limit2) {
+      if (split(p, i, j)) {
         out[o++] = (p[i] + p[j]) / 2;
         out[o++] = (p[i + 1] + p[j + 1]) / 2;
       }

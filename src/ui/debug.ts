@@ -66,12 +66,18 @@ export function createDebugPanel(parent: HTMLElement, options: DebugOptions): De
 
   const sums = { compute: 0, draw: 0 };
   const counts = { compute: 0, draw: 0 };
-  const shown = { compute: '–', draw: '–' };
-  let frames = 0;
-  let since = performance.now();
+  const shown = { fps: '–', compute: '–', draw: '–' };
+  // Kare hızı yalnız çizim yapılan karelerden hesaplanır; boş anlar sayılsaydı
+  // takılan bir sürükleme bile yüksek hız gösterirdi.
+  let drew = false;
+  let activeFrames = 0;
+  let activeMs = 0;
+  let last = performance.now();
+  let since = last;
 
   function refresh(now: number): void {
-    const fps = (frames * 1000) / (now - since);
+    if (activeFrames > 0) shown.fps = number.format((activeFrames * 1000) / activeMs);
+    activeFrames = activeMs = 0;
     for (const kind of ['compute', 'draw'] as const) {
       // O saniyede hiç ölçüm yoksa son değer ekranda kalır.
       if (counts[kind] > 0) shown[kind] = decimal.format(sums[kind] / counts[kind]);
@@ -79,25 +85,32 @@ export function createDebugPanel(parent: HTMLElement, options: DebugOptions): De
     }
     const { drops, points } = options.stats();
     text.textContent = [
-      `${number.format(fps)} kare/sn`,
+      `çizerken ${shown.fps} kare/sn`,
       `damla ${number.format(drops)}`,
       `nokta ${number.format(points)}`,
       `hesap ${shown.compute} ms`,
       `çizim ${shown.draw} ms`,
     ].join('\n');
-    frames = 0;
     since = now;
   }
 
   (function loop(now: number) {
-    frames++;
+    // Çizim yapılan karenin süresi, önceki kareden bu yana geçen zamandır
+    // (araya giren hesap süresi dahil).
+    if (drew) {
+      activeFrames++;
+      activeMs += now - last;
+      drew = false;
+    }
+    last = now;
     if (now - since >= REFRESH_MS) refresh(now);
     requestAnimationFrame(loop);
-  })(since);
-  refresh(since + 1);
+  })(last);
+  refresh(last);
 
   return {
     add(kind, ms) {
+      if (kind === 'draw') drew = true;
       sums[kind] += ms;
       counts[kind]++;
     },

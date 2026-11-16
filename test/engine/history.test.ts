@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { beginGesture, createHistory, endGesture, record, undo } from '../../src/engine/history';
-import { refine } from '../../src/engine/marbling';
 import type { Params } from '../../src/engine/params';
 import {
   applyOp,
   createState,
   replayOps,
+  settle,
   strokeStep,
   type MarblingState,
 } from '../../src/engine/state';
@@ -41,7 +41,7 @@ function session(params: Params) {
         strokeStep(state.drops, tool, path[i - 1][0], path[i - 1][1], path[i][0], path[i][1], params);
       }
       if (path.length > 1) {
-        refine(state.drops, params);
+        settle(state, params);
         record(h, { t: tool, path });
       }
       endGesture(h);
@@ -71,6 +71,17 @@ function play(s: ReturnType<typeof session>): void {
 }
 
 describe('history', () => {
+  it('tekne boyutu ve nokta bütçesi devredeyken de canlı çizim = yeniden oynatma', () => {
+    const tight: Params = { ...P, refine: { ...P.refine, maxTotalPoints: 2600 } };
+    const s = session(tight);
+    s.gesture({ t: 'clear', w: 400, h: 300 });
+    play(s);
+    const total = s.state.drops.reduce((n, d) => n + d.p.length / 2, 0);
+    expect(total).toBeLessThanOrEqual(2600 + 96); // bütçe yalnız inceltmeyi durdurur, yeni damlayı değil
+    expect(points(s.state)).toEqual(points(replayOps(s.h.ops, tight)));
+    while (s.undo()) expect(points(s.state)).toEqual(points(replayOps(s.h.ops, tight)));
+  });
+
   it('canlı çizimin sonucu, günlüğün baştan oynatılmasıyla birebir aynıdır', () => {
     const s = session(P);
     play(s);

@@ -2,10 +2,9 @@
 
 import { jitterTone } from '../engine/color';
 import { beginGesture, createHistory, endGesture, record, undo } from '../engine/history';
-import { refine } from '../engine/marbling';
 import { PALETTES } from '../engine/palettes';
 import { PARAMS } from '../engine/params';
-import { applyOp, createState, strokeStep } from '../engine/state';
+import { applyOp, createState, settle, strokeStep } from '../engine/state';
 import type { Op, Vec2 } from '../engine/types';
 import { createRenderer, type Theme } from '../render/canvas';
 import { createDebugPanel, heavyBasinOps, isDebug, type DebugPanel } from './debug';
@@ -165,7 +164,7 @@ export function startApp(): void {
     pointerId = null;
     if (activeTool !== 'drop' && path.length > 1) {
       // Canlı adımlar zaten uygulandı; hamle inceltmeyle biter ve günlüğe yazılır.
-      refine(state.drops);
+      settle(state);
       record(history, { t: activeTool, path });
       invalidate();
     }

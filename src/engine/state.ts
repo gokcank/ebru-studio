@@ -54,6 +54,14 @@ function stroke(
   }
 }
 
+/**
+ * Hamle sonu inceltmesi. Canlı çizim de (parmak kalkınca) yeniden oynatma da
+ * bunu çağırır; inceltme teknenin boyutuna bağlı olduğu için tek yerden yapılır.
+ */
+export function settle(state: MarblingState, params: Params = PARAMS): void {
+  refine(state.drops, params, state);
+}
+
 /** Tek hamleyi uygular (durumu yerinde değiştirir); her hamle inceltmeyle biter. */
 export function applyOp(state: MarblingState, op: Op, params: Params = PARAMS): void {
   switch (op.t) {
@@ -73,7 +81,7 @@ export function applyOp(state: MarblingState, op: Op, params: Params = PARAMS): 
       state.h = op.h;
       return;
   }
-  refine(state.drops, params);
+  settle(state, params);
 }
 
 /** Hamle listesini boş tekneden başlayarak oynatır. */

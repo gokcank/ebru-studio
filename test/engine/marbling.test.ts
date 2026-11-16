@@ -163,6 +163,45 @@ describe('refine', () => {
   });
 });
 
+describe('refine: tekne dışı ve toplam bütçe', () => {
+  const ring = (...xy: number[]): Drop => ({ c: '#000000', e: '#000000', p: new Float32Array(xy) });
+  const basin = { w: 400, h: 300 };
+
+  it('tümüyle teknenin aynı kenarının dışında kalan kenarı inceltmez', () => {
+    // Üçgen teknenin sağında, payın (40) da ötesinde.
+    const d = ring(500, 50, 600, 50, 550, 200);
+    const before = d.p;
+    refine([d], P, basin);
+    expect(d.p).toBe(before);
+    refine([d], P); // tekne bilgisi yoksa eskisi gibi inceltir
+    expect(d.p.length).toBe(12);
+  });
+
+  it('pay içindeki ya da bir ucu teknede olan kenarı inceltir', () => {
+    const near = ring(410, 50, 430, 50, 420, 80); // dışarıda ama payın içinde
+    const half = ring(380, 50, 600, 50, 600, 60); // bir ucu teknede
+    refine([near, half], P, basin);
+    expect(near.p.length).toBe(12);
+    expect(half.p.length).toBe(10); // tümüyle dışarıdaki (600,50)-(600,60) kenarı bölünmez
+  });
+
+  it('uçları farklı kenarların dışında olup tekneyi kesen kenarı inceltir', () => {
+    const across = ring(-100, 150, 500, 150, 500, 160, -100, 160); // soldan sağa tekneyi geçer
+    refine([across], P, basin);
+    // İki uzun kenar bölünür; uçlardaki kısa (10 px) kenarlar tek tarafın dışında kalır.
+    expect(across.p.length).toBe(12);
+  });
+
+  it('toplam bütçeyi aşacak damlayı inceltmez; öncelik en yeni damlanındır', () => {
+    const params: Params = { ...P, refine: { ...P.refine, maxTotalPoints: 12 } };
+    const old = ring(0, 0, 100, 0, 100, 100, 0, 100);
+    const fresh = ring(200, 0, 300, 0, 300, 100, 200, 100);
+    refine([old, fresh], params); // 8 nokta var; her damla 4 nokta ister, bütçe yalnız birine yeter
+    expect(fresh.p.length).toBe(16);
+    expect(old.p.length).toBe(8);
+  });
+});
+
 describe('sprinkle', () => {
   const colors = ['#1d3557', '#8a3324', '#f4ead5'];
   const make = (seed: number) => {

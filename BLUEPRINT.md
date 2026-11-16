@@ -101,7 +101,7 @@ Klasik sayısal ebru ("mathematical marbling") yaklaşımı; her damla deforme o
 | **Damla** (C, r) | Her mevcut P için: `P' = C + (P−C)·√(1 + r²/|P−C|²)` | `|P−C|² < ε` koruması şart |
 | **Biz** (uç x,y; yön M; adım len) | `P' = P + M · z·u^d`, `d = |P − uç|` | Yerel çekme. `z = min(len·k_biz, z_biz_max)` |
 | **Tarak** (uç; yön M; normal N) | `t = ((P−uç)·N) mod aralık; d = min(t, aralık−t)` sonra aynı itme | Dişler M'ye paralel çizgiler; tüm tekneyi etkiler |
-| **Refine** | Komşu nokta arası > eşik ise orta nokta ekle | Her etkileşim sonunda; tavanlar aşılamaz |
+| **Refine** | Komşu nokta arası > eşik ise orta nokta ekle | Her etkileşim sonunda; tavanlar aşılamaz. Tümüyle tekne dışında kalan kenar bölünmez; toplam bütçe dolunca inceltme durur (öncelik en yeni damlada) |
 
 **Başlangıç katsayıları** (prototip v2'de doğrulanan his; tamamı `engine/params.ts`'te):
 
@@ -110,6 +110,7 @@ damla.nokta=96  damla.boylar=[13,24,40]  damla.tavan=240
 biz.u=0.93   biz.k=1.2  biz.zmax=14  biz.menzil=160
 tarak.u=0.88 tarak.zmax=9  tarak.aralık=46
 refine.eşik=7  refine.koordinatTavanı=3200   (= damla başına 1600 nokta; prototipteki gerçek davranış)
+refine.toplamNoktaBütçesi=96000  refine.tekneDışıPayı=40   (prototipte yok; telefonda adım süresini sınırlar)
 serpme.n=16  serpme.r=[5,31]
 ```
 

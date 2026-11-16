@@ -15,7 +15,8 @@ export const PROTOTYPE_PARAMS: Params = {
   },
   tine: { u: 0.93, k: 1.2, zMax: 14, range: 160 },
   comb: { u: 0.88, zMax: 9, spacing: 46 },
-  refine: { threshold: 7, maxCoords: 3200 },
+  // Prototipte toplam bütçe ve tekne dışı kuralı yoktu.
+  refine: { threshold: 7, maxCoords: 3200, maxTotalPoints: Infinity, outsideMargin: 40 },
   sprinkle: { n: 16, rMin: 5, rMax: 31 },
   input: { minStep: 3, dropSpacing: 1.6 },
   opening: { n: 26, combLen: 7 },
