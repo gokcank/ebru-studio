@@ -50,18 +50,22 @@ npm run typecheck  # tsc --noEmit
 - Refine tavanları kaldırılırsa uzun tarak seanslarında nokta patlar; tavan değişikliği performans ölçümüyle gelir.
 - iOS Safari: pointer capture + `touch-action:none` olmadan kaydırma çizimi bozar.
 
-## Durum (16 Kasım 2026 itibarıyla)
+## Durum (17 Kasım 2026 itibarıyla)
 
 - **M0 bitti, site yayında.** Prototipteki her şey katmanlı mimaride: engine (altın dosya testleriyle), render, ui.
 - M0'da plandan fazla yapılanlar: hamle günlüğünden geri alma (ara anlık görüntülerle), tekne boyutunun ekrandan
   bağımsız olması (ekran dönünce sığdırılır, tekne dışına çizilmez), dar/basık ekranda kompakt araç çubuğu.
-- Sıradaki iş: `?debug` ölçüm sayacı (kare hızı, damla ve nokta sayısı), ardından M1.
+- `?debug` ölçüm kutusu var (yayında da açılır): çizerken kare hızı, damla/nokta sayısı, hesap ve çizim süresi,
+  her seferinde aynı yüklü tekneyi kuran "Ağır tekne" düğmesi.
+- İnceltmenin iki sınırı var (`params.ts` → `refine`): tümüyle tekne dışındaki kenar bölünmez, toplam nokta
+  bütçesi dolunca inceltme durur.
 
 ## Açık işler
 
+- Nokta sınırlarından sonra gerçek telefonda yeniden ölçüm bekleniyor (ağır tekne, uzun tarak sürüklemesi) ve
+  dolu teknede yeni şekillerin köşeli görünüp görünmediği. Bütçe ve pay buna göre ayarlanır.
+- Nokta başına hesabı ucuzlatma: önerildi, karar yok. `?debug` için canlı his kaydırıcıları: ayrı adım.
 - His kalibrasyonu: sahibi prototiple belirgin fark görmedi; katsayılar prototip değerlerinde.
-- Performans: çok taranmış teknede nokta sayısı 150 bini aşıyor; darboğaz hesap değil, çizimin boyanması.
-  Optimizasyon kararı gerçek telefonda `?debug` ölçümünden sonra verilecek.
 - iOS Safari hiç denenmedi. Araç simgeleri hâlâ emoji (ileride inline SVG).
 - Görünüm katsayıları `render/canvas.ts` başında duruyor (`params.ts`'te değil); yeri sahibine soruldu, karar yok.
 - `LICENSE` (MIT) ve `README.md` henüz yok.
@@ -70,6 +74,8 @@ npm run typecheck  # tsc --noEmit
 
 - Altın dosya (`test/engine/golden/`) prototipin kendi fonksiyonlarından üretilir: `node test/engine/golden/generate.mjs`.
   Testler `params.ts`'i değil sabit bir kopyayı kullanır; his ayarı testleri kırmaz.
+- Performans kararı gerçek cihaz ölçümüyle verilir (emülatör darboğazı yanlış gösterdi); optimizasyon önermeden
+  önce noktaların nerede olduğuna bak.
 - Görsel değişiklikten sonra dar (≈360 px), yatay telefon ve geniş ekran görüntüsüne bak; stil dosyasında blok
   taşırken komşu kuralları silmek kolay (otomatik kontroller yakalamaz).
 
