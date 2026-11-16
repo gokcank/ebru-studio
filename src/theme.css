@@ -1,0 +1,66 @@
+/* Tema tokenları: tüm renkler buradan. Koyu tema çift blok deseniyle tanımlanır
+   (sistem tercihi + elle seçim); iki blok birbirinin aynısı kalmalıdır. */
+:root {
+  --water: #e8e0cc; /* kitreli su / aharlı kâğıt */
+  --ink: #2b2217;
+  --panel: rgba(252, 249, 241, 0.92);
+  --line: rgba(43, 34, 23, 0.16);
+  --accent: #8a3324; /* kiremit */
+  --shadow: 0 2px 14px rgba(43, 34, 23, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --water: #141a21; /* gece teknesi */
+    --ink: #e7e1d4;
+    --panel: rgba(24, 30, 38, 0.92);
+    --line: rgba(231, 225, 212, 0.18);
+    --accent: #d98e73;
+    --shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --water: #141a21;
+  --ink: #e7e1d4;
+  --panel: rgba(24, 30, 38, 0.92);
+  --line: rgba(231, 225, 212, 0.18);
+  --accent: #d98e73;
+  --shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--water);
+  color: var(--ink);
+  font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+header {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+header h1 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+}
+
+#app {
+  flex: 1;
+  min-height: 0;
+}

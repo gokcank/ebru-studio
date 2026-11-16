@@ -1,0 +1,20 @@
+{
+  "name": "ebru-studio",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Tarayıcıda ebru sanatı: sıfır bağımlılık, Canvas 2D, TypeScript.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}
