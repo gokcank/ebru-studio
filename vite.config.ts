@@ -7,7 +7,5 @@ export default defineConfig({
     // Yalnız engine test edilir; saf fonksiyonlar, DOM yok.
     environment: 'node',
     include: ['test/**/*.test.ts'],
-    // İskelet aşaması: ilk engine testi gelince kaldırılacak.
-    passWithNoTests: true,
   },
 });

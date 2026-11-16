@@ -51,7 +51,10 @@ ebru-studio/
 │   ├── engine/            # SAF TypeScript — DOM yok, Canvas yok, yan etki yok
 │   │   ├── types.ts       # Drop, Op, Vec2, Palette
 │   │   ├── params.ts      # ★ TÜM katsayılar tek dosyada (his ayarı buradan)
-│   │   ├── marbling.ts    # dropDeform, tine (biz), comb (tarak), refine
+│   │   ├── marbling.ts    # dropDeform, addDrop, tine (biz), comb (tarak), refine, sprinkle
+│   │   ├── state.ts       # applyOp, replayOps: Op[] → tekne durumu
+│   │   ├── color.ts       # shade, jitterTone (yalnız 6 haneli hex)
+│   │   ├── palettes.ts    # 5 pigment paleti
 │   │   ├── presets.ts     # gelgit, şal, bülbül yuvası, çiçekler → Op[] üretir
 │   │   ├── replay.ts      # Op[] ⇄ URL-güvenli dize (kodla/çöz)
 │   │   └── rng.ts         # tohumlu PRNG (replay determinizmi için)
@@ -75,14 +78,14 @@ ebru-studio/
 ```ts
 type Drop = { c: string; e: string; p: Float32Array };  // renk, kenar rengi, nokta halkası
 type Op =                                                // her kullanıcı hamlesi bir Op
-  | { t:'drop'; x:number; y:number; r:number; c:string }
+  | { t:'drop'; x:number; y:number; r:number; c:string }  // c: nihai renk (ton titreşimi dahil)
   | { t:'tine'; path:[number,number][] }                 // biz: örneklenmiş yol
   | { t:'comb'; path:[number,number][] }
-  | { t:'sprinkle'; seed:number; n:number }
+  | { t:'sprinkle'; seed:number; n:number; w:number; h:number; colors:string[] }
   | { t:'clear' };
 ```
 
-**Önemli ilke — Op günlüğü tek gerçek:** Tuval her zaman `Op[]` listesinin sonucudur. Undo = son Op'u at, baştan (ya da ara anlık görüntüden) tekrar oynat; replay paylaşımı = aynı listenin kodlanmış hâli; testler = Op listesi ver, nokta koordinatlarını doğrula. Rastgelelik yalnız `rng.ts` üzerinden (tohumlu) — determinizm bozulmaz.
+**Önemli ilke — Op günlüğü tek gerçek:** Tuval her zaman `Op[]` listesinin sonucudur. Undo = son Op'u at, baştan (ya da ara anlık görüntüden) tekrar oynat; replay paylaşımı = aynı listenin kodlanmış hâli; testler = Op listesi ver, nokta koordinatlarını doğrula. Rastgelelik yalnız `rng.ts` üzerinden (tohumlu) — determinizm bozulmaz. Bu yüzden her Op sonucu tek başına belirleyen bilgiyi taşır: serpme alan boyutunu ve renk sırasını, damla nihai rengini içerir. Her Op inceltmeyle (refine) biter.
 
 ---
 
@@ -103,7 +106,7 @@ Klasik sayısal ebru ("mathematical marbling") yaklaşımı; her damla deforme o
 damla.nokta=96  damla.boylar=[13,24,40]  damla.tavan=240
 biz.u=0.93   biz.k=1.2  biz.zmax=14  biz.menzil=160
 tarak.u=0.88 tarak.zmax=9  tarak.aralık=46
-refine.eşik=7  refine.noktaTavanı=3200
+refine.eşik=7  refine.koordinatTavanı=3200   (= damla başına 1600 nokta; prototipteki gerçek davranış)
 serpme.n=16  serpme.r=[5,31]
 ```
 
