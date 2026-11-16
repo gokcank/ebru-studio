@@ -50,6 +50,7 @@ export function createToolbar(
   const swatches = must<HTMLElement>(root, '#swatches');
   const auto = must<HTMLButtonElement>(root, '#auto');
   const paletteButton = must<HTMLButtonElement>(root, '#palette');
+  const paletteName = must<HTMLElement>(paletteButton, '.lbl');
 
   tools.addEventListener('click', (e) => {
     const b = (e.target as Element).closest<HTMLButtonElement>('button[data-tool]');
@@ -102,7 +103,7 @@ export function createToolbar(
           return b;
         }),
       );
-      paletteButton.textContent = `🎨 ${palette.name}`;
+      paletteName.textContent = palette.name;
       paletteButton.setAttribute('aria-label', `Palet: ${palette.name}. Sıradaki palete geç`);
     },
   };

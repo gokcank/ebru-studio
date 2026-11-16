@@ -20,10 +20,10 @@
     <canvas id="tekne" role="img" aria-label="Ebru teknesi"></canvas>
     <div id="bar" role="toolbar" aria-label="Araç çubuğu">
       <div class="grp" id="tools" role="group" aria-label="Araç">
-        <button type="button" data-tool="drop" aria-pressed="true" aria-label="Damla aracı">💧 Damla</button>
-        <button type="button" data-tool="tine" aria-pressed="false" aria-label="Biz aracı">🪡 Biz</button>
-        <button type="button" data-tool="comb" aria-pressed="false" aria-label="Tarak aracı">🪮 Tarak</button>
-        <button type="button" id="sprinkle" aria-label="Serpme: rastgele damlalar bırak">✨ Serpme</button>
+        <button type="button" data-tool="drop" aria-pressed="true" aria-label="Damla aracı"><span class="ico" aria-hidden="true">💧</span><span class="lbl">Damla</span></button>
+        <button type="button" data-tool="tine" aria-pressed="false" aria-label="Biz aracı"><span class="ico" aria-hidden="true">🪡</span><span class="lbl">Biz</span></button>
+        <button type="button" data-tool="comb" aria-pressed="false" aria-label="Tarak aracı"><span class="ico" aria-hidden="true">🪮</span><span class="lbl">Tarak</span></button>
+        <button type="button" id="sprinkle" aria-label="Serpme: rastgele damlalar bırak"><span class="ico" aria-hidden="true">✨</span><span class="lbl">Serpme</span></button>
       </div>
       <div class="sep"></div>
       <div class="grp" id="sizes" role="group" aria-label="Damla boyu"></div>
@@ -38,12 +38,15 @@
       >
         🔀
       </button>
+      <button type="button" id="palette" aria-label="Paleti değiştir">
+        <span class="ico" aria-hidden="true">🎨</span><span class="lbl keep"></span>
+      </button>
       <div class="sep"></div>
-      <div class="grp">
-        <button type="button" id="undo" aria-label="Son hamleyi geri al">↩ Geri al</button>
-        <button type="button" id="palette" aria-label="Paleti değiştir"></button>
-        <button type="button" id="clear" aria-label="Tekneyi temizle">🗑 Temizle</button>
+      <div class="grp" id="actions">
+        <button type="button" id="undo" aria-label="Son hamleyi geri al"><span class="ico" aria-hidden="true">↩</span><span class="lbl">Geri al</span></button>
+        <button type="button" id="clear" aria-label="Tekneyi temizle"><span class="ico" aria-hidden="true">🗑️</span><span class="lbl">Temizle</span></button>
       </div>
+      <div class="brk"></div>
     </div>
     <div id="toast" role="status"></div>
     <script type="module" src="/src/main.ts"></script>
