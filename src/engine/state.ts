@@ -14,21 +14,37 @@ export function createState(): MarblingState {
   return { drops: [] };
 }
 
+/**
+ * Biz ya da tarağın tek adımı: uç (x0, y0)'dan (x, y)'ye gider. Canlı çizim de
+ * yeniden oynatma da bu fonksiyondan geçer; ikisinin sonucu bu yüzden aynıdır.
+ */
+export function strokeStep(
+  drops: readonly Drop[],
+  tool: 'tine' | 'comb',
+  x0: number,
+  y0: number,
+  x: number,
+  y: number,
+  params: Params = PARAMS,
+): void {
+  const dx = x - x0;
+  const dy = y - y0;
+  const len = Math.hypot(dx, dy);
+  if (len === 0) return; // yönü olmayan adım
+  (tool === 'tine' ? tine : comb)(drops, x, y, dx / len, dy / len, len, params);
+}
+
 /** Yolun her ardışık nokta çiftini bir araç adımı olarak uygular. */
 function stroke(
   drops: readonly Drop[],
-  step: typeof tine,
+  tool: 'tine' | 'comb',
   path: readonly Vec2[],
   params: Params,
 ): void {
   for (let i = 1; i < path.length; i++) {
     const [x0, y0] = path[i - 1];
     const [x, y] = path[i];
-    const dx = x - x0;
-    const dy = y - y0;
-    const len = Math.hypot(dx, dy);
-    if (len === 0) continue; // yönü olmayan adım
-    step(drops, x, y, dx / len, dy / len, len, params);
+    strokeStep(drops, tool, x0, y0, x, y, params);
   }
 }
 
@@ -39,10 +55,8 @@ export function applyOp(state: MarblingState, op: Op, params: Params = PARAMS): 
       addDrop(state.drops, op.x, op.y, op.r, op.c, params);
       break;
     case 'tine':
-      stroke(state.drops, tine, op.path, params);
-      break;
     case 'comb':
-      stroke(state.drops, comb, op.path, params);
+      stroke(state.drops, op.t, op.path, params);
       break;
     case 'sprinkle':
       sprinkle(state.drops, op.seed, op.n, op.w, op.h, op.colors, params);

@@ -5,12 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content="Tarayıcıda ebru sanatı: boya damlat, biz ve tarakla desen çek." />
     <title>Ebru Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap"
+    />
   </head>
   <body>
     <header>
       <h1>Ebru Studio</h1>
+      <small>dokun: damla verir · sürükle: biz/tarak çeker</small>
     </header>
     <canvas id="tekne" role="img" aria-label="Ebru teknesi"></canvas>
+    <div id="bar" role="toolbar" aria-label="Araç çubuğu">
+      <div class="grp" id="tools" role="group" aria-label="Araç">
+        <button type="button" data-tool="drop" aria-pressed="true" aria-label="Damla aracı">💧 Damla</button>
+        <button type="button" data-tool="tine" aria-pressed="false" aria-label="Biz aracı">🪡 Biz</button>
+        <button type="button" data-tool="comb" aria-pressed="false" aria-label="Tarak aracı">🪮 Tarak</button>
+        <button type="button" id="sprinkle" aria-label="Serpme: rastgele damlalar bırak">✨ Serpme</button>
+      </div>
+      <div class="sep"></div>
+      <div class="grp" id="sizes" role="group" aria-label="Damla boyu"></div>
+      <div class="sep"></div>
+      <div class="grp" id="swatches" role="group" aria-label="Renk"></div>
+      <button
+        type="button"
+        id="auto"
+        aria-pressed="true"
+        aria-label="Her damlada renk değişsin"
+        title="her damlada renk değişsin"
+      >
+        🔀
+      </button>
+      <div class="sep"></div>
+      <div class="grp">
+        <button type="button" id="undo" aria-label="Son hamleyi geri al">↩ Geri al</button>
+        <button type="button" id="palette" aria-label="Paleti değiştir"></button>
+        <button type="button" id="clear" aria-label="Tekneyi temizle">🗑 Temizle</button>
+      </div>
+    </div>
+    <div id="toast" role="status"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -53,6 +53,7 @@ ebru-studio/
 │   │   ├── params.ts      # ★ TÜM katsayılar tek dosyada (his ayarı buradan)
 │   │   ├── marbling.ts    # dropDeform, addDrop, tine (biz), comb (tarak), refine, sprinkle
 │   │   ├── state.ts       # applyOp, replayOps: Op[] → tekne durumu
+│   │   ├── history.ts     # hamle günlüğü + geri alma (ara anlık görüntüden yeniden oynatma)
 │   │   ├── color.ts       # shade, jitterTone (yalnız 6 haneli hex)
 │   │   ├── palettes.ts    # 5 pigment paleti
 │   │   ├── presets.ts     # gelgit, şal, bülbül yuvası, çiçekler → Op[] üretir
@@ -62,7 +63,7 @@ ebru-studio/
 │   │   ├── canvas.ts      # draw(drops, ctx, theme): doku, pigment kenarı, vinyet
 │   │   └── export.ts      # 2x PNG + köşe imzası (offscreen canvas)
 │   ├── ui/
-│   │   ├── app.ts         # durum, undo yığını, pointer akışı
+│   │   ├── app.ts         # durum, hamle günlüğü, pointer akışı
 │   │   ├── toolbar.ts     # araçlar, paletler, boylar
 │   │   └── toast.ts
 │   ├── theme.css          # tokenlar (aşağıda)

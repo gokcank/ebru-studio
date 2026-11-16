@@ -17,6 +17,9 @@ export const PROTOTYPE_PARAMS: Params = {
   comb: { u: 0.88, zMax: 9, spacing: 46 },
   refine: { threshold: 7, maxCoords: 3200 },
   sprinkle: { n: 16, rMin: 5, rMax: 31 },
+  input: { minStep: 3, dropSpacing: 1.6 },
+  opening: { n: 26, combLen: 7 },
+  history: { checkpointEvery: 4, maxCheckpoints: 8 },
 };
 
 /** Tek noktalı "damla": tek bir noktanın nasıl hareket ettiğini izlemek için. */

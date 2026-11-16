@@ -53,6 +53,24 @@ export type Params = {
     rMin: number;
     rMax: number;
   };
+  input: {
+    /** İşaretçi bundan kısa hareket ettiyse adım sayılmaz (px). */
+    minStep: number;
+    /** Sürükleyerek damla dizerken iki damla arası yol, yarıçapın katı olarak. */
+    dropSpacing: number;
+  };
+  opening: {
+    /** Açılıştaki hazır battal zeminin damla sayısı. */
+    n: number;
+    /** Açılıştaki tek tarak geçişinin adım uzunluğu (px). */
+    combLen: number;
+  };
+  history: {
+    /** Kaç harekette bir ara anlık görüntü alınır (geri alma hızı için). */
+    checkpointEvery: number;
+    /** Saklanan en çok ara anlık görüntü; daha eskisi için baştan oynatılır. */
+    maxCheckpoints: number;
+  };
 };
 
 export const PARAMS: Params = {
@@ -69,4 +87,7 @@ export const PARAMS: Params = {
   comb: { u: 0.88, zMax: 9, spacing: 46 },
   refine: { threshold: 7, maxCoords: 3200 },
   sprinkle: { n: 16, rMin: 5, rMax: 31 },
+  input: { minStep: 3, dropSpacing: 1.6 },
+  opening: { n: 26, combLen: 7 },
+  history: { checkpointEvery: 4, maxCheckpoints: 8 },
 };
