@@ -261,6 +261,35 @@ button[aria-pressed='true'] {
   vertical-align: middle;
 }
 
+/* ---------- ölçüm kutusu (?debug) ---------- */
+#debug {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 44px);
+  right: max(10px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: var(--shadow);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+#debug pre {
+  margin: 0;
+  font: 12px/1.45 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+#debug button {
+  pointer-events: auto;
+  border-color: var(--line);
+  padding: 5px 8px;
+}
+
 /* ---------- bilgi balonu ---------- */
 #toast {
   position: absolute;

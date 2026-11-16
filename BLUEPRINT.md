@@ -201,8 +201,8 @@ Dokunma: tek parmak çizer; iki parmak hareketi yok (v1'de zoom yok). Klavye: `1
 
 | Risk | Azaltma |
 |---|---|
-| "His" ayarı uzar (en gerçek risk) | Tüm katsayılar `params.ts`'te; `?debug` ile ekranda canlı kaydırıcılar (yalnız dev build) |
-| Refine sonrası nokta patlaması → kasma | Tavanlar + damla başı nokta limiti; FPS sayacı debug modunda |
+| "His" ayarı uzar (en gerçek risk) | Tüm katsayılar `params.ts`'te; `?debug` ile ekranda canlı kaydırıcılar (henüz yok) |
+| Refine sonrası nokta patlaması → kasma | Tavanlar + damla başı nokta limiti; `?debug` ölçüm kutusu (kare hızı, damla/nokta sayısı, hesap ve çizim süresi, "Ağır tekne" düğmesi) — yayındaki sitede de açılır |
 | Replay determinizmi bozulur | Rastgelelik yalnız tohumlu `rng.ts`; engine testlerinde altın-dosya (golden) karşılaştırma |
 | Safari dokunma tuhaflıkları | Erken gerçek cihaz testi (M0'da), `touch-action:none` + pointer capture |
 | Kapsam kayması | Bu dosyadaki "Kapsam DIŞI" listesi; yeni fikir → §9 fikir havuzuna, koda değil |

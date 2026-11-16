@@ -8,6 +8,7 @@ import { PARAMS } from '../engine/params';
 import { applyOp, createState, strokeStep } from '../engine/state';
 import type { Op, Vec2 } from '../engine/types';
 import { createRenderer, type Theme } from '../render/canvas';
+import { createDebugPanel, heavyBasinOps, isDebug, type DebugPanel } from './debug';
 import { createToast } from './toast';
 import { createToolbar, type ToolId } from './toolbar';
 
@@ -31,6 +32,19 @@ export function startApp(): void {
   let colorIx = 0;
   let autoCycle = true;
 
+  /* ---------- ölçüm (yalnız ?debug ile) ---------- */
+  let debug: DebugPanel | null = null;
+  /** İşi çalıştırır; ölçüm kutusu açıksa süresini de kaydeder. */
+  function timed(kind: 'compute' | 'draw', work: () => void): void {
+    if (!debug) {
+      work();
+      return;
+    }
+    const start = performance.now();
+    work();
+    debug.add(kind, performance.now() - start);
+  }
+
   /* ---------- çizim: yalnız gerektiğinde, kare başına en çok bir kez ---------- */
   let frame = 0;
   function invalidate(): void {
@@ -43,7 +57,7 @@ export function startApp(): void {
         bench: style.getPropertyValue('--bench').trim(),
         line: style.getPropertyValue('--line').trim(),
       };
-      renderer.draw(state.drops, state, theme);
+      timed('draw', () => renderer.draw(state.drops, state, theme));
     });
   }
 
@@ -57,7 +71,7 @@ export function startApp(): void {
   /* ---------- hamleler ---------- */
   /** Hamleyi uygular ve günlüğe yazar. */
   function commit(op: Op): void {
-    applyOp(state, op);
+    timed('compute', () => applyOp(state, op));
     record(history, op);
     invalidate();
   }
@@ -137,7 +151,8 @@ export function startApp(): void {
         moved = 0;
       }
     } else {
-      strokeStep(state.drops, activeTool, px, py, x, y);
+      const tool = activeTool;
+      timed('compute', () => strokeStep(state.drops, tool, px, py, x, y));
       path.push([x, y]);
       invalidate();
     }
@@ -209,6 +224,25 @@ export function startApp(): void {
   toolbar.setSize(dropR);
   toolbar.setAutoCycle(autoCycle);
   toolbar.setPalette(PALETTES[paletteIx], colorIx);
+
+  if (isDebug()) {
+    debug = createDebugPanel(document.body, {
+      stats() {
+        let points = 0;
+        for (const d of state.drops) points += d.p.length / 2;
+        return { drops: state.drops.length, points };
+      },
+      onHeavy() {
+        if (pointerId !== null) return;
+        // Tek hareket: tek geri al ile önceki tekneye dönülür.
+        beginGesture(history, state);
+        const ops = heavyBasinOps(renderer.width, renderer.height, PALETTES[0].colors);
+        for (const op of ops) commit(op);
+        endGesture(history);
+        toast('Ağır tekne kuruldu');
+      },
+    });
+  }
 
   /* ---------- boyut ve tema ---------- */
   window.addEventListener('resize', () => {
