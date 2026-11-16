@@ -8,10 +8,16 @@ import type { Drop, Op, Vec2 } from './types';
 export type MarblingState = {
   /** Çizim sırasıyla damlalar (ilk eleman en altta). */
   drops: Drop[];
+  /**
+   * Teknenin boyutu (damla koordinatlarının birimiyle). Ekran boyutundan
+   * bağımsızdır: ekran değişince tekne ekrana sığdırılır, durum değişmez.
+   */
+  w: number;
+  h: number;
 };
 
 export function createState(): MarblingState {
-  return { drops: [] };
+  return { drops: [], w: 0, h: 0 };
 }
 
 /**
@@ -63,6 +69,8 @@ export function applyOp(state: MarblingState, op: Op, params: Params = PARAMS): 
       break;
     case 'clear':
       state.drops = [];
+      state.w = op.w;
+      state.h = op.h;
       return;
   }
   refine(state.drops, params);

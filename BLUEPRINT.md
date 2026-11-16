@@ -83,10 +83,12 @@ type Op =                                                // her kullanıcı haml
   | { t:'tine'; path:[number,number][] }                 // biz: örneklenmiş yol
   | { t:'comb'; path:[number,number][] }
   | { t:'sprinkle'; seed:number; n:number; w:number; h:number; colors:string[] }
-  | { t:'clear' };
+  | { t:'clear'; w:number; h:number };                    // yeni tekne: boyutu da belirler; günlüğün ilk hamlesi
 ```
 
 **Önemli ilke — Op günlüğü tek gerçek:** Tuval her zaman `Op[]` listesinin sonucudur. Undo = son Op'u at, baştan (ya da ara anlık görüntüden) tekrar oynat; replay paylaşımı = aynı listenin kodlanmış hâli; testler = Op listesi ver, nokta koordinatlarını doğrula. Rastgelelik yalnız `rng.ts` üzerinden (tohumlu) — determinizm bozulmaz. Bu yüzden her Op sonucu tek başına belirleyen bilgiyi taşır: serpme alan boyutunu ve renk sırasını, damla nihai rengini içerir. Her Op inceltmeyle (refine) biter.
+
+**Tekne boyutu ekrandan bağımsızdır:** Tekne, sayfa açılırkenki tuval boyutunu alır (ilk `clear` hamlesi) ve durumun parçasıdır. Ekran dönünce ya da pencere değişince durum değişmez; `render` tekneyi oranını koruyarak ekrana sığdırır ve ortalar. Teknenin dışı tezgâh rengindedir, çerçeveyle ayrılır ve oraya çizilemez. "Temizle" yeni tekneyi o anki ekran boyutunda açar; geri alınınca eski boyut da döner.
 
 ---
 

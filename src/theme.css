@@ -2,6 +2,7 @@
    (sistem tercihi + elle seçim); iki blok birbirinin aynısı kalmalıdır. */
 :root {
   --water: #e8e0cc; /* kitreli su / aharlı kâğıt */
+  --bench: #cbc2ab; /* teknenin dışındaki tezgâh */
   --ink: #2b2217;
   --panel: rgba(252, 249, 241, 0.92);
   --line: rgba(43, 34, 23, 0.16);
@@ -12,6 +13,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --water: #141a21; /* gece teknesi */
+    --bench: #0b0f14;
     --ink: #e7e1d4;
     --panel: rgba(24, 30, 38, 0.92);
     --line: rgba(231, 225, 212, 0.18);
@@ -23,6 +25,7 @@
 
 :root[data-theme='dark'] {
   --water: #141a21;
+  --bench: #0b0f14;
   --ink: #e7e1d4;
   --panel: rgba(24, 30, 38, 0.92);
   --line: rgba(231, 225, 212, 0.18);
@@ -177,22 +180,42 @@ button[aria-pressed='true'] {
   display: none;
 }
 
-/* Dar ekran: çubuk iki sıraya iner, kaydırma gerekmez; düğmelerde yalnız simge kalır. */
-@media (max-width: 600px) {
+/* Küçük ekran (dar ya da basık): düğmelerde yalnız simge kalır, boşluklar azalır. */
+@media (max-width: 600px), (max-height: 500px) {
   #bar {
-    flex-wrap: wrap;
-    overflow-x: visible;
     gap: 6px;
     padding-left: max(10px, env(safe-area-inset-left, 0px));
     padding-right: max(10px, env(safe-area-inset-right, 0px));
   }
 
-  #bar .sep {
-    display: none;
-  }
-
   #bar .grp {
     gap: 2px;
+  }
+
+  #bar #swatches {
+    gap: 9px;
+  }
+
+  #bar button:not(.sw) {
+    min-width: 34px;
+    min-height: 36px;
+    padding: 6px;
+  }
+
+  .lbl:not(.keep) {
+    display: none;
+  }
+}
+
+/* Dar ekran: çubuk iki sıraya iner, kaydırma gerekmez. */
+@media (max-width: 600px) {
+  #bar {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  #bar .sep {
+    display: none;
   }
 
   /* Üst sıra: araçlar, boylar, geri al / temizle. Alt sıra: renkler ve palet. */
@@ -221,23 +244,13 @@ button[aria-pressed='true'] {
   #palette {
     order: 5;
   }
+}
 
-  #bar #swatches {
-    gap: 9px;
-  }
-
-  #bar button:not(.sw) {
-    min-width: 34px;
-    min-height: 36px;
-    padding: 6px;
-  }
-
-  .lbl:not(.keep) {
-    display: none;
-  }
-
-  #toast {
-    bottom: calc(116px + env(safe-area-inset-bottom, 0px));
+/* Basık ekran (yatay telefon): tek sıra, tekneye yer kalsın diye ince çubuk. */
+@media (max-height: 500px) and (min-width: 601px) {
+  #bar {
+    padding-top: 5px;
+    padding-bottom: calc(5px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -272,5 +285,17 @@ button[aria-pressed='true'] {
 @media (prefers-reduced-motion: reduce) {
   #toast {
     transition: none;
+  }
+}
+
+@media (max-width: 600px) {
+  #toast {
+    bottom: calc(116px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-height: 500px) and (min-width: 601px) {
+  #toast {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   }
 }

@@ -7,7 +7,7 @@ import { PALETTES } from '../engine/palettes';
 import { PARAMS } from '../engine/params';
 import { applyOp, createState, strokeStep } from '../engine/state';
 import type { Op, Vec2 } from '../engine/types';
-import { createRenderer } from '../render/canvas';
+import { createRenderer, type Theme } from '../render/canvas';
 import { createToast } from './toast';
 import { createToolbar, type ToolId } from './toolbar';
 
@@ -37,8 +37,13 @@ export function startApp(): void {
     if (frame) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
-      const water = getComputedStyle(document.body).getPropertyValue('--water').trim();
-      renderer.draw(state.drops, water);
+      const style = getComputedStyle(document.body);
+      const theme: Theme = {
+        water: style.getPropertyValue('--water').trim(),
+        bench: style.getPropertyValue('--bench').trim(),
+        line: style.getPropertyValue('--line').trim(),
+      };
+      renderer.draw(state.drops, state, theme);
     });
   }
 
@@ -73,8 +78,8 @@ export function startApp(): void {
       t: 'sprinkle',
       seed: (Math.random() * 2 ** 32) >>> 0,
       n,
-      w: renderer.width,
-      h: renderer.height,
+      w: state.w,
+      h: state.h,
       colors: order,
     };
   }
@@ -94,20 +99,25 @@ export function startApp(): void {
   let moved = 0;
   let path: Vec2[] = [];
 
-  /** İşaretçinin tuval içindeki konumu (CSS piksel), tuval sınırına kıskaçlanmış. */
+  /** İşaretçinin tekne koordinatındaki konumu (tekne dışına taşabilir). */
   function position(e: PointerEvent): Vec2 {
     const rect = canvas.getBoundingClientRect();
-    return [
-      Math.max(0, Math.min(rect.width, e.clientX - rect.left)),
-      Math.max(0, Math.min(rect.height, e.clientY - rect.top)),
-    ];
+    return renderer.toBasin(e.clientX - rect.left, e.clientY - rect.top, state);
+  }
+
+  /** Konumu tekne sınırına kıskaçlar: sürüklerken dışarı taşan hamle kenarda kalır. */
+  function clamp([x, y]: Vec2): Vec2 {
+    return [Math.max(0, Math.min(state.w, x)), Math.max(0, Math.min(state.h, y))];
   }
 
   canvas.addEventListener('pointerdown', (e) => {
     if (pointerId !== null || e.button !== 0) return;
+    const [x0, y0] = position(e);
+    if (x0 < 0 || y0 < 0 || x0 > state.w || y0 > state.h) return; // tekne dışı: çizilmez
     pointerId = e.pointerId;
     canvas.setPointerCapture(e.pointerId);
-    [px, py] = position(e);
+    px = x0;
+    py = y0;
     moved = 0;
     activeTool = tool;
     beginGesture(history, state);
@@ -117,7 +127,7 @@ export function startApp(): void {
 
   canvas.addEventListener('pointermove', (e) => {
     if (e.pointerId !== pointerId) return;
-    const [x, y] = position(e);
+    const [x, y] = clamp(position(e));
     const len = Math.hypot(x - px, y - py);
     if (len < PARAMS.input.minStep) return;
     moved += len;
@@ -190,7 +200,8 @@ export function startApp(): void {
       toast(`Palet: ${PALETTES[paletteIx].name}`);
     },
     onClear() {
-      gesture({ t: 'clear' });
+      // Yeni tekne o anki ekranı tam doldurur.
+      gesture({ t: 'clear', w: renderer.width, h: renderer.height });
       toast('Tekne temizlendi');
     },
   });
@@ -208,7 +219,8 @@ export function startApp(): void {
 
   /* ---------- açılış: hazır bir battal zemin (geri alınamaz) ---------- */
   renderer.fit();
-  const mid = renderer.width / 2;
+  commit({ t: 'clear', w: renderer.width, h: renderer.height }); // teknenin başlangıç boyutu
+  const mid = state.w / 2;
   commit(sprinkleOp(PARAMS.opening.n));
   commit({ t: 'comb', path: [[mid, -PARAMS.opening.combLen], [mid, 0]] });
 }

@@ -4,13 +4,15 @@
 // oynatma en yakın ara görüntüden başlar. Sonuç her durumda baştan oynatmayla aynıdır.
 
 import { PARAMS, type Params } from './params';
-import { applyOp, type MarblingState } from './state';
+import { applyOp, createState, type MarblingState } from './state';
 import type { Drop, Op } from './types';
 
 type Checkpoint = {
   /** Bu görüntü, `ops[0..at)` uygulandıktan sonraki durumdur. */
   at: number;
   drops: Drop[];
+  w: number;
+  h: number;
 };
 
 export type History = {
@@ -39,7 +41,7 @@ export function beginGesture(h: History, state: MarblingState, params: Params = 
   const last = h.checkpoints[h.checkpoints.length - 1];
   if (h.marks.length % params.history.checkpointEvery !== 0) return;
   if (last && last.at === h.ops.length) return; // bu noktanın görüntüsü zaten var
-  h.checkpoints.push({ at: h.ops.length, drops: cloneDrops(state.drops) });
+  h.checkpoints.push({ at: h.ops.length, drops: cloneDrops(state.drops), w: state.w, h: state.h });
   if (h.checkpoints.length > params.history.maxCheckpoints) h.checkpoints.shift();
 }
 
@@ -64,7 +66,9 @@ export function undo(h: History, params: Params = PARAMS): MarblingState | null 
     h.checkpoints.pop();
   }
   const base = h.checkpoints[h.checkpoints.length - 1];
-  const state: MarblingState = { drops: base ? cloneDrops(base.drops) : [] };
+  const state: MarblingState = base
+    ? { drops: cloneDrops(base.drops), w: base.w, h: base.h }
+    : createState();
   for (let i = base ? base.at : 0; i < mark; i++) applyOp(state, h.ops[i], params);
   return state;
 }

@@ -140,12 +140,26 @@ describe('history', () => {
     expect(h.ops.length).toBe(1);
   });
 
-  it('temizle de geri alınır', () => {
+  it('temizle de geri alınır; teknenin eski boyutu da geri gelir', () => {
     const s = session(P);
+    s.gesture({ t: 'clear', w: 400, h: 300 });
     s.gesture({ t: 'drop', x: 100, y: 100, r: 24, c: '#1d3557' });
-    s.gesture({ t: 'clear' });
+    s.gesture({ t: 'clear', w: 800, h: 200 });
     expect(s.state.drops.length).toBe(0);
+    expect([s.state.w, s.state.h]).toEqual([800, 200]);
     s.undo();
     expect(s.state.drops.length).toBe(1);
+    expect([s.state.w, s.state.h]).toEqual([400, 300]);
+  });
+
+  it('ara görüntüden dönülünce de tekne boyutu korunur', () => {
+    const every: Params = { ...P, history: { checkpointEvery: 1, maxCheckpoints: 8 } };
+    const s = session(every);
+    s.gesture({ t: 'clear', w: 640, h: 360 });
+    s.gesture({ t: 'drop', x: 100, y: 100, r: 24, c: '#1d3557' });
+    s.gesture({ t: 'drop', x: 200, y: 100, r: 24, c: '#1d3557' });
+    s.undo();
+    expect(s.h.checkpoints.length).toBeGreaterThan(0);
+    expect([s.state.w, s.state.h, s.state.drops.length]).toEqual([640, 360, 1]);
   });
 });

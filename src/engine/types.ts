@@ -35,4 +35,8 @@ export type Op =
    * türer; renkler `colors` listesinden sırayla alınır.
    */
   | { t: 'sprinkle'; seed: number; n: number; w: number; h: number; colors: string[] }
-  | { t: 'clear' };
+  /**
+   * Yeni tekne: damlaları siler ve teknenin boyutunu `w`×`h` yapar. Günlüğün
+   * ilk hamlesi de budur (teknenin başlangıç boyutunu o belirler).
+   */
+  | { t: 'clear'; w: number; h: number };

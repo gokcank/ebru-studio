@@ -53,10 +53,13 @@ describe('replayOps', () => {
 });
 
 describe('applyOp', () => {
-  it('clear tekneyi boşaltır', () => {
-    const state = replayOps(ops, P);
-    applyOp(state, { t: 'clear' }, P);
+  it('clear tekneyi boşaltır ve boyutunu belirler', () => {
+    const state = replayOps([{ t: 'clear', w: 400, h: 300 }, ...ops], P);
+    expect([state.w, state.h]).toEqual([400, 300]);
+    expect(state.drops.length).toBe(3);
+    applyOp(state, { t: 'clear', w: 800, h: 200 }, P);
     expect(state.drops).toEqual([]);
+    expect([state.w, state.h]).toEqual([800, 200]);
   });
 
   it('her hamle inceltmeyle biter: büyük damlanın uzun kenarları bölünür', () => {
