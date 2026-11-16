@@ -1,0 +1,293 @@
+<title>Ebru Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: tek ekran — tam yüzey "tekne" (canvas), üstte ince başlık, altta araç çubuğu */
+:root{
+  --water:#e8e0cc;      /* kitreli su / aharlı kâğıt */
+  --ink:#2b2217;
+  --panel:rgba(252,249,241,.92);
+  --line:rgba(43,34,23,.16);
+  --accent:#8a3324;     /* kiremit */
+  --shadow:0 2px 14px rgba(43,34,23,.14);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --water:#141a21; --ink:#e7e1d4; --panel:rgba(24,30,38,.92);
+    --line:rgba(231,225,212,.18); --accent:#d98e73;
+    --shadow:0 2px 14px rgba(0,0,0,.45); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --water:#141a21; --ink:#e7e1d4; --panel:rgba(24,30,38,.92);
+  --line:rgba(231,225,212,.18); --accent:#d98e73;
+  --shadow:0 2px 14px rgba(0,0,0,.45); color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--water);color:var(--ink);
+  font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  display:flex;flex-direction:column;overflow:hidden}
+#tekne{flex:1;min-height:0;touch-action:none;cursor:crosshair;display:block;width:100%}
+header{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);left:0;right:0;
+  display:flex;justify-content:space-between;align-items:baseline;pointer-events:none;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px))}
+header h1{margin:0;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:22px;
+  letter-spacing:.02em}
+header small{opacity:.65}
+#bar{display:flex;gap:8px;align-items:center;overflow-x:auto;scrollbar-width:none;
+  background:var(--panel);border-top:1px solid var(--line);backdrop-filter:blur(6px);
+  padding-block:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+#bar::-webkit-scrollbar{display:none}
+.grp{display:flex;gap:4px;align-items:center;flex:none}
+.sep{width:1px;align-self:stretch;background:var(--line);flex:none}
+button{font:inherit;color:var(--ink);background:transparent;border:1px solid transparent;
+  border-radius:8px;padding:7px 10px;cursor:pointer;flex:none;white-space:nowrap}
+button:hover{border-color:var(--line)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.on{background:var(--accent);color:var(--water);border-color:transparent}
+.sw{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid transparent;
+  box-shadow:inset 0 0 0 1px var(--line)}
+.sw.on{border-color:var(--accent)}
+.dot{display:inline-block;border-radius:50%;background:currentColor;vertical-align:middle}
+#toast{position:absolute;left:50%;transform:translateX(-50%);
+  bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--panel);
+  border:1px solid var(--line);border-radius:10px;padding:8px 14px;box-shadow:var(--shadow);
+  opacity:0;transition:opacity .25s;pointer-events:none;max-width:85%}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion: reduce){#toast{transition:none}}
+</style>
+
+<header>
+  <h1>Ebru Studio</h1>
+  <small>dokun: damla verir · sürükle: biz/tarak çeker</small>
+</header>
+<canvas id="tekne"></canvas>
+<div id="bar">
+  <div class="grp" id="tools">
+    <button data-t="damla" class="on">💧 Damla</button>
+    <button data-t="biz">🪡 Biz</button>
+    <button data-t="tarak">🪮 Tarak</button>
+    <button id="serp">✨ Serpme</button>
+  </div>
+  <div class="sep"></div>
+  <div class="grp" id="sizes">
+    <button data-r="13" title="küçük damla"><span class="dot" style="width:8px;height:8px"></span></button>
+    <button data-r="24" class="on" title="orta damla"><span class="dot" style="width:13px;height:13px"></span></button>
+    <button data-r="40" title="büyük damla"><span class="dot" style="width:18px;height:18px"></span></button>
+  </div>
+  <div class="sep"></div>
+  <div class="grp" id="pal"></div>
+  <button id="auto" class="on" title="her damlada renk değişsin">🔀</button>
+  <div class="sep"></div>
+  <div class="grp">
+    <button id="undo">↩ Geri al</button>
+    <button id="paletCycle"></button>
+    <button id="clear">🗑 Temizle</button>
+  </div>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+'use strict';
+/* ---------- durum ---------- */
+const PALETTES = [
+  {ad:'Klasik',  r:['#1d3557','#8a3324','#f4ead5','#c9a227','#3f5e3a']},
+  {ad:'Çini',    r:['#1446a0','#2ab7ca','#f7f4ec','#b3001b','#0f6a53']},
+  {ad:'Gece',    r:['#0e1b2c','#c9a227','#6d597a','#e8e0cc','#355070']},
+  {ad:'Gülkurusu',r:['#9d6b72','#e5d0cc','#54494b','#c48f8f','#efe6dd']},
+  {ad:'Zümrüt',  r:['#0b5d4a','#d9c9a3','#163832','#58a081','#8a3324']},
+];
+let palIx=0, colorIx=0, autoCycle=true, tool='damla', dropR=24;
+let drops=[];           // {c:renk, p:[x0,y0,x1,y1,...]}
+let undoStack=[];       // en çok 25 anlık görüntü
+const cv=document.getElementById('tekne'), ctx=cv.getContext('2d');
+let W=0,H=0,dirty=false;
+
+/* ---------- matematik (klasik sayısal ebru) ---------- */
+function deformDrop(cx,cy,r){                 // yeni damla eskileri dışa iter
+  const r2=r*r;
+  for(const d of drops){const p=d.p;
+    for(let i=0;i<p.length;i+=2){
+      let dx=p[i]-cx, dy=p[i+1]-cy, q=dx*dx+dy*dy;
+      if(q<1e-6){dx=.01;dy=0;q=1e-4}
+      const s=Math.sqrt(1+r2/q);
+      p[i]=cx+dx*s; p[i+1]=cy+dy*s;
+    }}
+}
+function biz(x,y,mx,my,len){                  // yerel çekme: iğne ucu
+  const z=Math.min(len*1.2,14), u=0.93;
+  for(const d of drops){const p=d.p;
+    for(let i=0;i<p.length;i+=2){
+      const dist=Math.hypot(p[i]-x,p[i+1]-y);
+      if(dist>160) continue;
+      const f=z*Math.pow(u,dist);
+      p[i]+=mx*f; p[i+1]+=my*f;
+    }}
+}
+function tarak(x,y,mx,my,len){                // paralel dişler: tüm tekneyi dalgalandırır
+  const z=Math.min(len,9), u=0.88, aralik=46;
+  const nx=-my, ny=mx;                        // dişler sürükleme yönüne paralel dizilir
+  for(const d of drops){const p=d.p;
+    for(let i=0;i<p.length;i+=2){
+      let t=((p[i]-x)*nx+(p[i+1]-y)*ny)%aralik;
+      if(t<0)t+=aralik;
+      const dist=Math.min(t,aralik-t);
+      const f=z*Math.pow(u,dist);
+      p[i]+=mx*f; p[i+1]+=my*f;
+    }}
+}
+function refine(){                            // gerilen kenarlara ara nokta ekle
+  for(const d of drops){
+    if(d.p.length>3200) continue;
+    const out=[], p=d.p, n=p.length;
+    for(let i=0;i<n;i+=2){
+      const j=(i+2)%n;
+      out.push(p[i],p[i+1]);
+      if(Math.hypot(p[j]-p[i],p[j+1]-p[i+1])>7)
+        out.push((p[i]+p[j])/2,(p[i+1]+p[j+1])/2);
+    }
+    d.p=out;
+  }
+}
+
+/* ---------- işlemler ---------- */
+function snap(){
+  undoStack.push(drops.map(d=>({c:d.c,e:d.e,p:d.p.slice()})));
+  if(undoStack.length>25) undoStack.shift();
+}
+function addDrop(x,y,r,c){
+  deformDrop(x,y,r);
+  const cc=shade(c,(Math.random()*14-7)|0);   // pigment tonu hafifçe oynasın
+  const p=[]; for(let a=0;a<96;a++){const t=a/96*2*Math.PI;
+    p.push(x+r*Math.cos(t), y+r*Math.sin(t));}
+  drops.push({c:cc,e:shade(cc,-30),p});
+  if(drops.length>240) drops.shift();         // bellek emniyeti
+}
+function nextColor(){
+  const r=PALETTES[palIx].r;
+  if(autoCycle) colorIx=(colorIx+1)%r.length;
+  return r[colorIx];
+}
+function serpme(n){
+  snap();
+  for(let i=0;i<n;i++)
+    addDrop(Math.random()*W, Math.random()*H, 5+Math.random()*26, nextColor());
+  refine(); dirty=true;
+}
+
+/* ---------- çizim ---------- */
+function water(){return getComputedStyle(document.body).getPropertyValue('--water').trim()}
+function shade(hex,amt){                      // #rrggbb tonunu koyulaştır/açtır
+  const n=parseInt(hex.slice(1),16);
+  const r=Math.max(0,Math.min(255,(n>>16)+amt)),
+        g=Math.max(0,Math.min(255,((n>>8)&255)+amt)),
+        b=Math.max(0,Math.min(255,(n&255)+amt));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+const grain=document.createElement('canvas');grain.width=grain.height=160;
+{const g=grain.getContext('2d'),id=g.createImageData(160,160);
+ for(let i=0;i<id.data.length;i+=4){const v=205+Math.random()*50|0;
+   id.data[i]=id.data[i+1]=id.data[i+2]=v;id.data[i+3]=255}
+ g.putImageData(id,0,0)}
+let grainPat=null;
+function draw(){
+  dirty=false;
+  ctx.fillStyle=water(); ctx.fillRect(0,0,W,H);
+  for(const d of drops){const p=d.p;
+    ctx.beginPath(); ctx.moveTo(p[0],p[1]);
+    for(let i=2;i<p.length;i+=2) ctx.lineTo(p[i],p[i+1]);
+    ctx.closePath();
+    ctx.fillStyle=d.c; ctx.fill();
+    ctx.strokeStyle=d.e||d.c; ctx.lineWidth=.8; ctx.stroke();   // pigment kenarı
+  }
+  grainPat||=ctx.createPattern(grain,'repeat');                 // kitre dokusu
+  ctx.save();ctx.globalAlpha=.06;ctx.globalCompositeOperation='multiply';
+  ctx.fillStyle=grainPat;ctx.fillRect(0,0,W,H);ctx.restore();
+  const vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.45,W/2,H/2,Math.hypot(W,H)*.58);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.12)'); // tekne derinliği
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+}
+(function loop(){ if(dirty) draw(); requestAnimationFrame(loop); })();
+
+/* ---------- boyutlandırma ---------- */
+function fit(){
+  const dpr=Math.min(devicePixelRatio||1,2);
+  W=cv.clientWidth; H=cv.clientHeight;
+  cv.width=W*dpr; cv.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineJoin=ctx.lineCap='round';
+  dirty=true;
+}
+addEventListener('resize',fit);
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>dirty=true);
+
+/* ---------- etkileşim ---------- */
+let px=0,py=0,drag=false,moved=0;
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId);
+  px=e.offsetX;py=e.offsetY;drag=true;moved=0;
+  snap();
+  if(tool==='damla'){addDrop(px,py,dropR,nextColor());refine();dirty=true}
+});
+cv.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  const x=e.offsetX,y=e.offsetY,dx=x-px,dy=y-py,len=Math.hypot(dx,dy);
+  if(len<3) return;
+  moved+=len;
+  const mx=dx/len,my=dy/len;
+  if(tool==='biz') biz(x,y,mx,my,len);
+  else if(tool==='tarak') tarak(x,y,mx,my,len);
+  else if(tool==='damla' && moved>dropR*1.6){addDrop(x,y,dropR,nextColor());moved=0}
+  px=x;py=y;dirty=true;
+});
+cv.addEventListener('pointerup',()=>{drag=false;refine();dirty=true});
+
+/* ---------- araç çubuğu ---------- */
+const $=s=>document.querySelector(s);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+function pick(group,el){group.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on')}
+
+$('#tools').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-t]'); if(!b) return;
+  tool=b.dataset.t; pick($('#tools'),b);
+});
+$('#serp').addEventListener('click',()=>{serpme(16);toast('Serpme: 16 damla')});
+$('#sizes').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-r]'); if(!b) return;
+  dropR=+b.dataset.r; pick($('#sizes'),b);
+});
+$('#auto').addEventListener('click',e=>{
+  autoCycle=!autoCycle; e.currentTarget.classList.toggle('on',autoCycle);
+  toast(autoCycle?'Renkler sırayla değişecek':'Renk sabit');
+});
+$('#undo').addEventListener('click',()=>{
+  if(!undoStack.length){toast('Geri alınacak hamle yok');return}
+  drops=undoStack.pop(); dirty=true;
+});
+$('#clear').addEventListener('click',()=>{snap();drops=[];dirty=true;toast('Tekne temizlendi')});
+
+function renderPal(){
+  const pal=$('#pal'); pal.innerHTML='';
+  PALETTES[palIx].r.forEach((c,i)=>{
+    const b=document.createElement('button');
+    b.className='sw'+(i===colorIx?' on':''); b.style.background=c;
+    b.title=c; b.setAttribute('aria-label','renk '+c);
+    b.onclick=()=>{colorIx=i;renderPal()};
+    pal.appendChild(b);
+  });
+  $('#paletCycle').textContent='🎨 '+PALETTES[palIx].ad;
+}
+$('#paletCycle').addEventListener('click',()=>{
+  palIx=(palIx+1)%PALETTES.length; colorIx=0; renderPal();
+  toast('Palet: '+PALETTES[palIx].ad);
+});
+
+/* ---------- açılış: hazır bir battal zemin ---------- */
+renderPal();
+requestAnimationFrame(()=>{ fit(); serpme(26); tarak(W/2,0,0,1,7); refine(); undoStack=[]; dirty=true; });
+</script>

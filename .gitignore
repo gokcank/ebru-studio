@@ -1,0 +1,5 @@
+node_modules/
+dist/
+
+# Yerel notlar (depoya girmez)
+HANDOFF.md
