@@ -12,7 +12,7 @@ npm test           # vitest — yalnız src/engine testleri
 npm run typecheck  # tsc --noEmit
 ```
 
-(Depo henüz iskelet aşamasındaysa ve bu komutlar yoksa: ilk iş M0'dır, bunları kuran PR'dır.)
+`main`'e her push, testler geçerse siteyi yayınlar (`.github/workflows/deploy.yml`) → https://gokcank.github.io/ebru-studio/
 
 ## Mimari kuralları (ihlal = yanlış çözüm)
 
@@ -52,15 +52,26 @@ npm run typecheck  # tsc --noEmit
 
 ## Durum (16 Kasım 2026 itibarıyla)
 
-- Depoda yalnız dokümanlar ve `prototip/ebru-studio.html` var; uygulama kodu, test ve yayın akışı henüz yok.
-- Sıradaki iş M0: iskelet → engine (testleriyle) → render → ui → Pages yayını.
-- İsim kesin: Ebru Studio.
+- **M0 bitti, site yayında.** Prototipteki her şey katmanlı mimaride: engine (altın dosya testleriyle), render, ui.
+- M0'da plandan fazla yapılanlar: hamle günlüğünden geri alma (ara anlık görüntülerle), tekne boyutunun ekrandan
+  bağımsız olması (ekran dönünce sığdırılır, tekne dışına çizilmez), dar/basık ekranda kompakt araç çubuğu.
+- Sıradaki iş: `?debug` ölçüm sayacı (kare hızı, damla ve nokta sayısı), ardından M1.
 
 ## Açık işler
 
-- His kalibrasyonu (damla / biz / tarak) için sahibinden geri bildirim bekleniyor.
-- Gerçek cihaz testi (iOS Safari, orta sınıf Android) yapılmadı.
+- His kalibrasyonu: sahibi prototiple belirgin fark görmedi; katsayılar prototip değerlerinde.
+- Performans: çok taranmış teknede nokta sayısı 150 bini aşıyor; darboğaz hesap değil, çizimin boyanması.
+  Optimizasyon kararı gerçek telefonda `?debug` ölçümünden sonra verilecek.
+- iOS Safari hiç denenmedi. Araç simgeleri hâlâ emoji (ileride inline SVG).
+- Görünüm katsayıları `render/canvas.ts` başında duruyor (`params.ts`'te değil); yeri sahibine soruldu, karar yok.
 - `LICENSE` (MIT) ve `README.md` henüz yok.
+
+## Doğrulama notları
+
+- Altın dosya (`test/engine/golden/`) prototipin kendi fonksiyonlarından üretilir: `node test/engine/golden/generate.mjs`.
+  Testler `params.ts`'i değil sabit bir kopyayı kullanır; his ayarı testleri kırmaz.
+- Görsel değişiklikten sonra dar (≈360 px), yatay telefon ve geniş ekran görüntüsüne bak; stil dosyasında blok
+  taşırken komşu kuralları silmek kolay (otomatik kontroller yakalamaz).
 
 ## Daha fazla bağlam
 
