@@ -51,6 +51,7 @@ npm run typecheck  # tsc --noEmit
 - iOS Safari: pointer capture + `touch-action:none` olmadan kaydırma çizimi bozar.
 
 ## Durum (17 Kasım 2026 itibarıyla)
+- Proje durumu: **aktif** (2026-11-18; asıl kaynak beyin sayfası).
 
 - **M0 bitti, site yayında.** Prototipteki her şey katmanlı mimaride: engine (altın dosya testleriyle), render, ui.
 - M0'da plandan fazla yapılanlar: hamle günlüğünden geri alma (ara anlık görüntülerle), tekne boyutunun ekrandan
